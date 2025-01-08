@@ -1,0 +1,14 @@
+build
+.cache
+.coverage
+dist
+*.egg-info
+.idea
+*.img
+*.pyc
+__pycache__
+selftest_results
+tags
+.venv/
+.vscode/
+*.zip

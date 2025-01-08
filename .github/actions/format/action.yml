@@ -1,0 +1,12 @@
+---
+name: Format and Lint
+description: Run code format and linting checks on the source
+inputs:
+  python_version:
+    description: Python Version to use
+    required: true
+
+runs:
+  using: composite
+  steps:
+

@@ -1,0 +1,64 @@
+[build-system]
+requires = ["setuptools>=54", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "makeflow"
+dynamic = ["version"]
+description = "Makefile based workflow for Python projects"
+readme = { file = "README.rst", content-type = "text/x-rst" }
+license = { file = "LICENSE" }
+requires-python = ">=3.9"
+keywords = ["systems", "development", "testing"]
+authors = [
+    { name = "Simon A. F. Lund", email = "os@safl.dk" }
+]
+maintainers = [
+    { name = "Simon A. F. Lund", email = "os@safl.dk" }
+]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Console",
+    "Intended Audience :: System Administrators",
+    "License :: OSI Approved :: BSD License",
+    "Programming Language :: Python",
+    "Topic :: Software Development",
+    "Topic :: Text Processing",
+    "Topic :: Utilities"
+]
+
+dependencies = [
+]
+
+[project.urls]
+homepage = "https://github.com/safl/makeflow"
+documentation = "https://github.com/safl/makeflow/blob/main/README.rst"
+repository = "https://github.com/safl/makeflow"
+
+[project.entry-points."console_scripts"]
+makeflow = "makeflow.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.dynamic]
+version = { attr = "makeflow.__version__" }
+
+[tool.ruff]
+line-length = 88
+
+[tool.mypy]
+ignore_missing_imports = true
+
+[tool.coverage.run]
+branch = true
+relative_files = true
+source_pkgs = [
+    "makeflow",
+]
+
+[tool.coverage.paths]
+source = [
+    "src/makeflow",
+    "*/site-packages/makeflow/",
+]

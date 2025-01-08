@@ -1,0 +1,202 @@
+---
+# These are the commonly used automation tasks, you do not **have** to
+#  change anything here. It will work as intended with your project without
+#  modification. The only adjustment required is that your configure the
+#  repository secrets:
+#
+# * PYPI_USERNAME
+# * PYPI_PASSWORD
+#
+# Having said that, then do go ahead and modify as you see fit.
+name: verify_and_publish
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+    - "main"
+    tags:
+    - "v*"
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  format:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ['3.12']
+
+    steps:
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5.2.0
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Set up Repository
+      uses: actions/checkout@v4.1.7
+
+    - name: Tooling Information
+      shell: bash
+      run: |
+        make info
+
+    - name: Format
+      shell: bash
+      run: |
+        make format
+
+  build:
+    needs: format
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ['3.9', '3.10', '3.11', '3.12']
+
+    steps:
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5.2.0
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Set up Repository
+      uses: actions/checkout@v4.1.7
+
+    - name: Build
+      run: make clean build
+
+    - name: Upload Project Package
+      uses: actions/upload-artifact@v4.3.0
+      with:
+        name: package-${{ matrix.python-version }}-${{ matrix.os }}
+        path: dist
+        if-no-files-found: error
+
+  unittest:
+    needs: [build]
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+        python-version: ['3.9', '3.10', '3.11', '3.12']
+
+    steps:
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5.2.0
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Set up Repository
+      uses: actions/checkout@v4.1.7
+
+    - name: Download the Package
+      uses: actions/download-artifact@v4.1.8
+      with:
+        name: package-${{ matrix.python-version }}-${{ matrix.os }}
+        path: dist
+
+    - name: Set up project
+      run: make clean build install-for-testing info
+
+    - name: Run tests
+      run: make test
+
+    - name: Upload Coverage file
+      uses: actions/upload-artifact@v4.3.0
+      with:
+        name: coverage-unittest-${{ matrix.python-version }}-${{ matrix.os }}
+        path: .coverage
+        if-no-files-found: error
+
+  publish-coverage:
+    runs-on: ${{ matrix.os }}
+    needs: [unittest]
+
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ['3.12']
+
+    steps:
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5.2.0
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Set up Repository
+      uses: actions/checkout@v4.1.7
+
+    - name: Download the Package
+      uses: actions/download-artifact@v4.1.8
+      with:
+        name: package-${{ matrix.python-version }}-${{ matrix.os }}
+        path: dist
+
+    - name: Set up project
+      run: make install-for-testing
+
+    - name: Set up PATH
+      run: |
+        pipx ensurepath
+        echo "$(make info-bin)" >> $GITHUB_PATH
+
+    # It may seem unnecessary to perform all the steps above. However, for Coverity
+    # and Coverallsapp to process the coverage files correctly, the project must be
+    # installed, and Coverity must be able to resolve it. The final step of updating
+    # the PATH ensures that Coverallsapp uses the Coverity instance provided by the
+    # project's virtual environment.
+    - name: Download Coverage files
+      uses: actions/download-artifact@v4.1.8
+      with:
+        path: coverage_data
+        pattern: coverage*
+
+    - name: Coveralls upload
+      uses: coverallsapp/github-action@v2
+      with:
+        files: coverage_data/coverage**/.coverage**
+
+  publish-package:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs:
+    - unittest
+
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: ['3.12']
+
+    steps:
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5.2.0
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Set up Repository
+      uses: actions/checkout@v4.1.7
+
+    - name: Download the Package
+      uses: actions/download-artifact@v4.1.8
+      with:
+        name: package-${{ matrix.python-version }}-${{ matrix.os }}
+        path: dist
+
+    - name: Set up project
+      run: make install-for-testing
+
+    - name: Build and publish
+      env:
+        TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+        TWINE_PASSWORD: ${{ secrets.PYPI_PASSWORD }}
+      run: make release

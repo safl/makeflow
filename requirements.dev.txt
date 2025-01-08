@@ -1,0 +1,7 @@
+coverage
+pydata-sphinx-theme
+pytest
+pytest-cov
+sphinx
+sphinx-copybutton
+sphinx-tabs

@@ -1,0 +1,17 @@
+---
+name: Unittest
+description: Run unittest with coverage tracking enabled
+inputs:
+  python_version:
+    description: Python Version to use
+    required: true
+
+runs:
+  using: composite
+  steps:
+  - name: Setup Python ${{ inputs.python_version }}
+    uses: actions/setup-python@v5.2.0
+    with:
+      python-version: ${{ inputs.python_version }}
+
+
