@@ -69,7 +69,7 @@ define docs-open-help
 endef
 .PHONY: docs-open
 docs-open:
-	xdg-open docs/build/html/index.html
+	xdg-open docs/build/html/index.html || open docs/build/html/index.html || true
 	@echo "## ${PROJECT_NAME}: docs-open [DONE]"
 
 define docs-help

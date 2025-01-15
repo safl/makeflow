@@ -8,7 +8,7 @@
 # * PYPI_PASSWORD
 #
 # Having said that, then do go ahead and modify as you see fit.
-name: verify_and_publish
+name: Verify and Publish
 
 on:
   workflow_dispatch:
