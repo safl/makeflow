@@ -40,4 +40,10 @@ GitHUB:
 * PYPI_USERNAME
 * PYPI_PASSWORD
 
+GitHUB Pages
+============
+
+* Enable pages in repository settings.
+* Adjust environment permissions add tags matching ``v*``
+
 .. _coveralls.io: https://coveralls.io/
