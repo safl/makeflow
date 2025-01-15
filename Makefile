@@ -31,6 +31,7 @@ PYTEST="$(shell pipx environment --value PIPX_LOCAL_VENVS)/${PROJECT_NAME}/bin/p
 SPHINXBUILD="$(shell pipx environment --value PIPX_LOCAL_VENVS)/${PROJECT_NAME}/bin/sphinx-build"
 
 MAKEFLOW_USAGE="./.makeflow/usage.py"
+MAKEFLOW_VERSION_BUMP="./.makeflow/version_bump.py"
 
 BUILD_DIR=dist
 BUILD_TARGET_PKG_TGZ=$(BUILD_DIR)/$(PROJECT_NAME)-$(PROJECT_VERSION).tar.gz
@@ -55,6 +56,14 @@ endef
 .PHONY: common
 common: clean install test docs-build
 	@echo "## ${PROJECT_NAME}: common [DONE]"
+
+define bump-help
+# Bump the project version number
+endef
+.PHONY: bump
+bump:
+	@$(MAKEFLOW_VERSION_BUMP)
+	@echo "## ${PROJECT_NAME}: bump [DONE]"
 
 define docs-build-help
 # Build documentation in HTML format
