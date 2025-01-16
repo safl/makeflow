@@ -1,3 +1,8 @@
 {
-  "versions": []
+  "versions": [
+    {
+      "version": "latest",
+      "url": "/latest/"
+    }
+  ]
 }
