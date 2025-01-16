@@ -1,0 +1,24 @@
+{
+  "versions": [
+    {
+      "version": "src",
+      "url": "/src/"
+    },
+    {
+      "version": "latest",
+      "url": "/latest/"
+    },
+    {
+      "version": "docs",
+      "url": "/docs/"
+    },
+    {
+      "version": "dist",
+      "url": "/dist/"
+    },
+    {
+      "version": ".git",
+      "url": "/.git/"
+    }
+  ]
+}

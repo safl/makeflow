@@ -1,0 +1,2 @@
+[console_scripts]
+makeflow = makeflow.cli:main
