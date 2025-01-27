@@ -18,48 +18,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
-
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
         python-version: 3.12
 
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
     - name: Build Documentation
       run: make build install docs-build
 
-    - name: Checkout gh-pages Branch
-      run: |
-        git fetch origin gh-pages
-        git checkout gh-pages || git checkout --orphan gh-pages
-
-    - name: Deploy Documentation
-      run: |
-        mkdir -p site
-        cp -r docs/build/html site/latest
+    - name: Checkout gh-pages branch
+      uses: actions/checkout@v4
+      with:
+        ref: gh-pages
+        path: gh-pages
 
     - name: Update versions.json
       run: |
-        python <<EOF
-        import os, json
-
-        site_dir = "site"
-        versions = []
-        os.makedirs("site/_static", exist_ok=True)
-        for folder in os.listdir(site_dir):
-            if os.path.isdir(os.path.join(site_dir, folder)) and folder not in ("_static", "assets"):
-                versions.append({"version": folder, "url": f"/{folder}/"})
-        versions = sorted(versions, key=lambda x: x["version"], reverse=True)
-
-        with open(os.path.join(site_dir, "_static", "versions.json"), "w") as f:
-            json.dump({"versions": versions}, f, indent=2)
-        EOF
+        mkdir -p gh-pages/en
+        ./.makeflow/docs_versions.py --docs docs/build/html --site gh-pages --ref "${{ github.ref }}"
 
     - name: Commit and Push Changes
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
+        cd gh-pages
         git config user.name "github-actions[bot]"
         git config user.email "github-actions[bot]@users.noreply.github.com"
         git add site
